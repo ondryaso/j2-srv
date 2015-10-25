@@ -15,4 +15,6 @@ public interface IResponseManager {
     String getResponseForBadImage(Exception e);
     String getResponseForPushError(Exception e);
     String getResponseForNotFound(String uri);
+
+    String getResponseForBadProtocol();
 }

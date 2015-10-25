@@ -50,4 +50,9 @@ public class DefaultResponseManager implements IResponseManager {
     public String getResponseForNotFound(String uri) {
         return "Not found, sorry m8.";
     }
+
+    @Override
+    public String getResponseForBadProtocol() {
+        return "Got wrong data";
+    }
 }

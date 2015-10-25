@@ -51,4 +51,9 @@ public class JsonResponseManager implements IResponseManager {
     public String getResponseForNotFound(String uri) {
         return "{ \"error\": \"notFound\" }";
     }
+
+    @Override
+    public String getResponseForBadProtocol() {
+        return "{ \"error\": \"badProtocol\", \"errorMessage\": \"Got wrong data\" }";
+    }
 }
