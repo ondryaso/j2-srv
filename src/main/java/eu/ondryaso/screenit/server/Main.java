@@ -41,8 +41,11 @@ public class Main {
     public Main(int port, int tcpPort, String dir, ReturnFormat returnFormat) throws IOException {
 
         this.img = new ImageManager(new File(dir));
-        this.http = new HttpServer(img, port, returnFormat);
-        this.http.start();
+
+        if(port != 0) {
+            this.http = new HttpServer(img, port, returnFormat);
+            this.http.start();
+        }
 
         if(tcpPort != 0) {
             this.tcp = new TcpServer(img, tcpPort, returnFormat);
@@ -54,8 +57,10 @@ public class Main {
     }
 
     public void stop() throws InterruptedException {
-        this.http.stop();
-        this.tcp.stop();
+        if(this.http != null)
+            this.http.stop();
+        if(this.tcp != null)
+            this.tcp.stop();
 
         Thread.sleep(1000);
         System.exit(0);
