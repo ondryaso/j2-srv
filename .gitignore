@@ -19,7 +19,6 @@ libs/
 src/META-INF/
 .vim.custom
 *.swp
-pom.xml
 
 # Package Files #
 *.jar
