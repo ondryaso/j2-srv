@@ -91,6 +91,7 @@ public class TcpServer implements Runnable {
             }
         }
 
+        //TODO: this method can't be trusted, it should be rewritten immediately (8.11.15)
         private byte[] readInputStream(InputStream inputStream) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
@@ -134,10 +135,12 @@ public class TcpServer implements Runnable {
                         } catch (IOException e) {
                             out.write(3);
                             out.write(response.getResponseForPushError(e).getBytes("UTF-8"));
+                            return;
                         }
                     } catch (IOException e) {
                         out.write(2);
                         out.write(response.getResponseForBadImage(e).getBytes("UTF-8"));
+                        return;
                     }
 
                     byte[] resp = response.getResponseForPush(name).getBytes("UTF-8");
