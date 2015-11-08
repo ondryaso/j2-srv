@@ -27,7 +27,7 @@ public class Main {
 
 
         while (System.in.available() <= 0) {
-            Thread.sleep(10000);
+            Thread.sleep(60000);
         }
 
         System.out.println("Stopping");

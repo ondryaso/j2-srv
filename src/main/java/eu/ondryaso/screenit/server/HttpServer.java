@@ -51,55 +51,61 @@ public class HttpServer extends NanoHTTPD {
             response = this.defaultResponseManager;
         }
 
-        if (uriParts.length > 1)
-            try {
-                if (uriParts[1].equalsIgnoreCase("push")) {
-                    return new Response(Response.Status.OK, response.getMimeForPush(),
-                            response.getResponseForPush("i" + this.pushImage(session)));
-                }
-
-                if (uriParts[1].startsWith("i")) {
-                    file = uriParts[1].substring(uri.indexOf("i"));
-                    boolean jpg;
-
-                    if (this.returnFormat == ReturnFormat.ALWAYS_JPG) {
-                        jpg = true;
-                    } else if (this.returnFormat == ReturnFormat.ALWAYS_PNG) {
-                        jpg = false;
-                    } else {
-                        boolean uepng = false, uejpg = false;
-
-                        if (uriParts.length > 2) {
-                            uepng = uriParts[2].equalsIgnoreCase("png");
-                            uejpg = uriParts[2].equalsIgnoreCase("jpg") || uriParts[2].equalsIgnoreCase("jpeg");
-                        }
-
-                        if (uepng)
-                            jpg = false;
-                        else if (uejpg)
-                            jpg = true;
-                        else {
-                            if(this.returnFormat == ReturnFormat.BY_SIZE)
-                                jpg = this.img.isJpgSmaller(file);
-                            else
-                                jpg = this.returnFormat == ReturnFormat.PREFER_JPG;
-                        }
+        try {
+            if (uriParts.length > 1)
+                try {
+                    if (uriParts[1].equalsIgnoreCase("push")) {
+                        return new Response(Response.Status.OK, response.getMimeForPush(),
+                                response.getResponseForPush(this.pushImage(session)));
                     }
 
-                    return new Response(Response.Status.OK, "image/" + (jpg ? "jpeg" : "png"), this.img.popFile(file, jpg));
-                }
-            } catch (FileNotFoundException e) {
-                return new Response(Response.Status.NOT_FOUND, response.getMimeForImageNotFound(),
-                        response.getResponseForImageNotFound(file, e));
-            } catch (IOException e) {
-                return new Response(Response.Status.INTERNAL_ERROR, response.getMimeForPushError(),
-                        response.getResponseForPushError(e));
-            } catch (NotImageException e) {
-                return new Response(Response.Status.BAD_REQUEST, response.getMimeForBadImage(),
-                        response.getResponseForBadImage(e));
-            }
+                    if (uriParts[1].startsWith("i")) {
+                        file = uriParts[1].substring(uri.indexOf("i"));
+                        boolean jpg;
 
-        return new Response(Response.Status.NOT_FOUND, response.getMimeForNotFound(), response.getResponseForNotFound(uri));
+                        if (this.returnFormat == ReturnFormat.ALWAYS_JPG) {
+                            jpg = true;
+                        } else if (this.returnFormat == ReturnFormat.ALWAYS_PNG) {
+                            jpg = false;
+                        } else {
+                            boolean uepng = false, uejpg = false;
+
+                            if (uriParts.length > 2) {
+                                uepng = uriParts[2].equalsIgnoreCase("png");
+                                uejpg = uriParts[2].equalsIgnoreCase("jpg") || uriParts[2].equalsIgnoreCase("jpeg");
+                            }
+
+                            if (uepng)
+                                jpg = false;
+                            else if (uejpg)
+                                jpg = true;
+                            else {
+                                if (this.returnFormat == ReturnFormat.BY_SIZE)
+                                    jpg = this.img.isJpgSmaller(file);
+                                else
+                                    jpg = this.returnFormat == ReturnFormat.PREFER_JPG;
+                            }
+                        }
+
+                        return new Response(Response.Status.OK, "image/" + (jpg ? "jpeg" : "png"), this.img.popFile(file, jpg));
+                    }
+                } catch (FileNotFoundException e) {
+                    return new Response(Response.Status.NOT_FOUND, response.getMimeForImageNotFound(),
+                            response.getResponseForImageNotFound(file, e));
+                } catch (IOException e) {
+                    return new Response(Response.Status.INTERNAL_ERROR, response.getMimeForPushError(),
+                            response.getResponseForPushError(e));
+                } catch (NotImageException e) {
+                    return new Response(Response.Status.BAD_REQUEST, response.getMimeForBadImage(),
+                            response.getResponseForBadImage(e));
+                }
+
+            return new Response(Response.Status.NOT_FOUND, response.getMimeForNotFound(), response.getResponseForNotFound(uri));
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return new Response(Response.Status.INTERNAL_ERROR, response.getMimeForPushError(),
+                    response.getResponseForPushError(e));
+        }
     }
 
     /**
