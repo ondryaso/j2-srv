@@ -68,7 +68,7 @@ public class ImageManager {
      * @throws IOException When parsing or image loading exception occurs.
 
      */
-    public String pushFile(BufferedImage img) throws IOException {
+    public String pushFile(BufferedImage img, int maxRequests) throws IOException {
         String name = this.generateName();
 
         File newFile = new File(this.saveDir, name + ".png");

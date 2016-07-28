@@ -55,8 +55,18 @@ public class HttpServer extends NanoHTTPD {
             if (uriParts.length > 1)
                 try {
                     if (uriParts[1].equalsIgnoreCase("push")) {
+                        int s = 0;
+
+                        if(uriParts.length > 2) {
+                            try {
+                                s = Integer.parseInt(uriParts[2]);
+                            } catch(NumberFormatException unused) {
+                                s = 0;
+                            }
+                        }
+
                         return new Response(Response.Status.OK, response.getMimeForPush(),
-                                response.getResponseForPush(this.pushImage(session)));
+                                response.getResponseForPush(this.pushImage(session, s)));
                     }
 
                     if (uriParts[1].startsWith("i")) {
@@ -112,15 +122,18 @@ public class HttpServer extends NanoHTTPD {
      * Takes file from POST, checks it and saves it with a random name, returns image URL name if no error happened.
      * Because of NanoHTTPD mechanisms, the POST has to be of a multipart/form-data type with proper boundary
      * containing one PNG file with proper Content-Type and Content-Disposition with field and file name set.
+     * If the maxRequests parameter is set, the image will be available only for specified number of requests,
+     * after that, it should be removed.
      *
      * @param session HTTP request to work with
+     * @param maxRequests Maximum image requests count
      * @return name of image without extension that you can use for requesting (like /ixxxxxx)
      * @throws IOException       If parsing or image loading exception occurs.
      * @throws NotImageException If the file provided is not a png image.
      * @see fi.iki.elonen.NanoHTTPD.TempFileManagerFactory
-     * @see ImageManager#pushFile(BufferedImage)
+     * @see ImageManager#pushFile(BufferedImage, int)
      */
-    private String pushImage(NanoHTTPD.IHTTPSession session) throws IOException, NotImageException {
+    private String pushImage(NanoHTTPD.IHTTPSession session, int maxRequests) throws IOException, NotImageException {
         Map<String, String> files = new HashMap<>();
 
         try {
@@ -130,14 +143,16 @@ public class HttpServer extends NanoHTTPD {
         }
 
         if (files.size() > 0) {
-            File declaredImage = new File(files.values().iterator().next());
+            while(files.values().iterator().hasNext()) {
+                File declaredImage = new File(files.values().iterator().next());
 
-            if (!this.img.isPngImage(declaredImage))
-                throw new NotImageException(null);
+                if (this.img.isPngImage(declaredImage))
+                    return this.img.pushFile(ImageIO.read(declaredImage), maxRequests);
+            }
 
-            return this.img.pushFile(ImageIO.read(declaredImage));
+            throw new NotImageException("request doesn't contain any valid image");
         } else {
-            throw new NotImageException("request doesn't contain any image");
+            throw new NotImageException("request doesn't contain any file");
         }
     }
 }
